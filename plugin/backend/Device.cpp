@@ -1,9 +1,5 @@
 #include "Device.h"
-
-#include "StringUtils.h"
 #include "Logger.h"
-
-#include <iostream>
 
 
 Device::Device(const sdbus::ObjectPath& objectPath, const std::map<std::string, sdbus::Variant>& deviceInterface) : _deviceProxy{sdbus::createProxy("org.bluez", objectPath)}, _battery(true) {

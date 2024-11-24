@@ -6,7 +6,6 @@
 #include "Logger.h"
 
 #include <regex>
-#include <iostream>
 #include <algorithm>
 
 DevicesInfoFetcher::DevicesInfoFetcher() : _rootProxy{sdbus::createProxy("org.bluez", "/")}, _defaultBluetoothAdapterProxy{sdbus::createProxy("org.bluez", "/org/bluez/hci0")} {
