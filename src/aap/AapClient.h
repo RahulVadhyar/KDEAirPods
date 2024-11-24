@@ -24,64 +24,60 @@
 #include <array>
 #include <memory>
 
-namespace MagicPodsCore {
+class AapClient {
+private:
+    std::unique_ptr<AapBatteryWatcher> BatteryWatcher {std::make_unique<AapBatteryWatcher>()};
+    std::unique_ptr<AapAncWatcher> AncWatcher {std::make_unique<AapAncWatcher>()};
 
-    class AapClient {
-    private:
-        std::unique_ptr<AapBatteryWatcher> BatteryWatcher {std::make_unique<AapBatteryWatcher>()};
-        std::unique_ptr<AapAncWatcher> AncWatcher {std::make_unique<AapAncWatcher>()};
+    std::string _address{};
+    int _socket{};
+    bool _isStarted{false};
+    
+    std::mutex _startStopMutex{};
 
-        std::string _address{};
-        int _socket{};
-        bool _isStarted{false};
-        
-        std::mutex _startStopMutex{};
+public:
+    explicit AapClient(const std::string& address);
 
-    public:
-        explicit AapClient(const std::string& address);
+    void Start();
+    void Stop();
 
-        void Start();
-        void Stop();
+    bool IsStarted() const {
+        return _isStarted;
+    }
 
-        bool IsStarted() const {
-            return _isStarted;
+    Event<std::map<BatteryType, BatteryWatcherData>>& GetBatteryEvent() {
+        return BatteryWatcher->GetEvent();
+    }
+
+    Event<AncWatcherData>& GetAncEvent() {
+        return AncWatcher->GetEvent();
+    }
+
+    void SendRequest(const AapRequest& aapRequest);
+
+private:
+    std::vector<char> hexStringToBytes(const std::string& hex) {
+        std::vector<char> bytes;
+
+        for (unsigned int i = 0; i < hex.length(); i += 2) {
+            std::string byteString = hex.substr(i, 2);
+            char byte = (char) strtol(byteString.c_str(), NULL, 16);
+            bytes.push_back(byte);
         }
 
-        Event<std::map<BatteryType, BatteryWatcherData>>& GetBatteryEvent() {
-            return BatteryWatcher->GetEvent();
+        return bytes;
+    }
+
+    inline static const char hexmap[] = {'0', '1', '2', '3', '4', '5', '6', '7',
+                            '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
+
+    std::string bytesToHexString(unsigned char *data, int len)
+    {
+        std::string s(len * 2, ' ');
+        for (int i = 0; i < len; ++i) {
+            s[2 * i] = hexmap[(data[i] & 0xF0) >> 4];
+            s[2 * i + 1] = hexmap[data[i] & 0x0F];
         }
-
-        Event<AncWatcherData>& GetAncEvent() {
-            return AncWatcher->GetEvent();
-        }
-
-        void SendRequest(const AapRequest& aapRequest);
-
-    private:
-        std::vector<char> hexStringToBytes(const std::string& hex) {
-	        std::vector<char> bytes;
-
-            for (unsigned int i = 0; i < hex.length(); i += 2) {
-                std::string byteString = hex.substr(i, 2);
-                char byte = (char) strtol(byteString.c_str(), NULL, 16);
-                bytes.push_back(byte);
-            }
-
-            return bytes;
-        }
-
-        inline static const char hexmap[] = {'0', '1', '2', '3', '4', '5', '6', '7',
-                                '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
-
-        std::string bytesToHexString(unsigned char *data, int len)
-        {
-            std::string s(len * 2, ' ');
-            for (int i = 0; i < len; ++i) {
-                s[2 * i] = hexmap[(data[i] & 0xF0) >> 4];
-                s[2 * i + 1] = hexmap[data[i] & 0x0F];
-            }
-            return s;
-        }
-    };
-
-}
+        return s;
+    }
+};

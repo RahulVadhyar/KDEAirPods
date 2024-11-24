@@ -1,6 +1,3 @@
 # Visual Studio Code
 .vscode/
 build/
-
-# Docker builder
-MagicPodsCore
