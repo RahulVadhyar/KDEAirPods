@@ -4,21 +4,24 @@
 */
 
 #include "airpodsHandler.hpp"
+#include "DevicesInfoFetcher.h"
 
 AirpodsHandler::AirpodsHandler(QObject *parent)
     : QObject(parent)
 {
-    // auto devices = this->devicesInfoFetcher.GetDevices();
-    // if(devices.size() == 0){
-    //     this->connected = false;
-    // } else {
-    //     this->connected = true;
-    // }
 
-    // this->device = this->devicesInfoFetcher.GetActiveDevice();
-    // this->deviceName = QString::fromStdString(this->device->GetName());
-    // this->deviceAddress = QString::fromStdString(this->device->GetAddress());
-    // this->ancStatus = (int)this->device->GetAncMode();
+    this->devicesInfoFetcher = std::make_shared<DevicesInfoFetcher>();
+    auto devices = this->devicesInfoFetcher->GetDevices();
+    if(devices.size() == 0){
+        this->connected = false;
+    } else {
+        this->connected = true;
+    }
+
+    this->device = this->devicesInfoFetcher->GetActiveDevice();
+    this->deviceName = QString::fromStdString(this->device->GetName());
+    this->deviceAddress = QString::fromStdString(this->device->GetAddress());
+    this->ancStatus = (int)this->device->GetAncMode();
 }
 
 QString AirpodsHandler::getDeviceName() const { 

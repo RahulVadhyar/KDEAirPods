@@ -5,8 +5,7 @@
 #pragma once
 
 #include <QObject>
-// #include "DevicesInfoFetcher.h"
-
+#include "DevicesInfoFetcher.h"
 class AirpodsHandler : public QObject
 {
     Q_OBJECT
@@ -43,6 +42,6 @@ private:
     QString deviceAddress;
     bool connected;
     int ancStatus;
-    // DevicesInfoFetcher devicesInfoFetcher;
-    // std::shared_ptr<Device> device;
+    std::shared_ptr<DevicesInfoFetcher> devicesInfoFetcher;
+    std::shared_ptr<Device> device;
 };
