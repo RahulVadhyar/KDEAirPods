@@ -23,7 +23,9 @@ PlasmoidItem {
             anchors.right: parent.right
             anchors.margins: Kirigami.Units.largeSpacing
             RowLayout{
+                Layout.fillWidth: true
                 Kirigami.Heading {
+                    Layout.fillWidth: true
                     text: Plasmoid.title
                     level: 1
                     Layout.alignment: Qt.AlignLeft
@@ -61,6 +63,7 @@ PlasmoidItem {
             }
             Kirigami.Separator {
                 Layout.fillWidth: true
+                visible: airpodsHandler.leftBattery > 0 || airpodsHandler.rightBattery > 0 || airpodsHandler.caseBattery > 0
             }
             Kirigami.FormLayout {
                 Layout.fillWidth: true
