@@ -11,6 +11,7 @@ import com.github.rahulvadhyar.private.KDEAirPods
 PlasmoidItem {
     id: root
     Plasmoid.title: airpodsHandler.deviceName
+    Plasmoid.icon: "audio-headphones" //TODO: Change this to airpods icon
     toolTipMainText: i18n("This is %1", Plasmoid.title)
     AirpodsHandler {
         id: airpodsHandler
@@ -20,25 +21,58 @@ PlasmoidItem {
             anchors.top: parent.top
             anchors.left: parent.left
             anchors.right: parent.right
-            Kirigami.FormLayout {
-                // label: i18n("AirPods")
+            anchors.margins: Kirigami.Units.largeSpacing
+            RowLayout{
+                Kirigami.Heading {
+                    text: Plasmoid.title
+                    level: 1
+                    Layout.alignment: Qt.AlignLeft
+                }
+                Button {
+                    icon.name: "view-refresh"
+                    onClicked: airpodsHandler.updateBatteryStatuses()
+                    Layout.alignment: Qt.AlignRight
+                }
+            }
+
+            Kirigami.Separator {
                 Layout.fillWidth: true
-                Kirigami.Separator {
-                    Kirigami.FormData.isSection: true
-                    Kirigami.FormData.label: Plasmoid.title
+            }
+            Kirigami.FormLayout {
+                Layout.fillWidth: true
+                BatteryItem {
+                    batteryPercentage: airpodsHandler.caseBattery
+                    isCharging: airpodsHandler.caseCharging
+                    Kirigami.FormData.label: "Case: "
+                    visible: airpodsHandler.caseBattery > 0
                 }
-                ProgressBar {
-                    from: 0
-                    to: 100
-                    value: 50
-                    Kirigami.FormData.label: i18n("Battery:")
+                BatteryItem {
+                    batteryPercentage: airpodsHandler.leftBattery
+                    isCharging: airpodsHandler.leftCharging
+                    Kirigami.FormData.label: "Left: "
+                    visible: airpodsHandler.leftBattery > 0
                 }
+                BatteryItem {
+                    batteryPercentage: airpodsHandler.rightBattery
+                    isCharging: airpodsHandler.rightCharging
+                    Kirigami.FormData.label: "Right: "
+                    visible: airpodsHandler.rightBattery > 0
+                }
+            }
+            Kirigami.Separator {
+                Layout.fillWidth: true
+            }
+            Kirigami.FormLayout {
+                Layout.fillWidth: true
+                Layout.alignment: Qt.AlignBottom
                 ComboBox {
                     id: comboBox
-                    model: ["AirPods", "AirPods Pro"]
-                    currentIndex: 1
+                    model: ["Off", "Transparency", "Noise Cancellation"]
+                    currentIndex: airpodsHandler.ancStatus - 1
                     Kirigami.FormData.label: i18n("Noise Cancellation:")
-                    // Layout.fillWidth: true
+                    onCurrentIndexChanged: {
+                        airpodsHandler.ancStatus = comboBox.currentIndex + 1
+                    }
                 }
             }
         }

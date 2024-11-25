@@ -9,7 +9,7 @@
         ],
         "Category": "System Information",
         "Description": "Airpods status widget",
-        "Icon": "battery",
+        "Icon": "audio-headphones",
         "Name": "Airpods",
         "Version": "1.0",
         "Website": "https://github.com/RahulVadhyar/KDEAirPods",

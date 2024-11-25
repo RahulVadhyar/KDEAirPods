@@ -30,7 +30,7 @@ find_package(sdbus-c++ REQUIRED)
 
 add_compile_options(-fexceptions)
 ecm_add_qml_module(KDEAirPodsplugin URI com.github.rahulvadhyar.private.KDEAirPods)
-target_sources(KDEAirPodsplugin PRIVATE plugin/KDEAirPods.cpp plugin/airpodsHandler.cpp plugin/batteryStatus.cpp)
+target_sources(KDEAirPodsplugin PRIVATE plugin/KDEAirPods.cpp plugin/airpodsHandler.cpp)
 target_include_directories(KDEAirPodsplugin PRIVATE plugin/backend)
 target_link_libraries(KDEAirPodsplugin PRIVATE KF6::I18n Qt6::Gui Qt6::Qml)
 add_subdirectory(plugin/backend)
