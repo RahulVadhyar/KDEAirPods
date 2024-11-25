@@ -12,10 +12,65 @@ PlasmoidItem {
     id: root
     Plasmoid.title: airpodsHandler.deviceName
     Plasmoid.icon: "audio-headphones" //TODO: Change this to airpods icon
-    toolTipMainText: i18n("This is %1", Plasmoid.title)
+    toolTipMainText: i18n(Plasmoid.title)
+    toolTipSubText: airpodsHandler.connected ? i18n("Connected"  + "\n" + "Left: %1%\nRight: %2%\nCase: %3%", airpodsHandler.leftBattery, airpodsHandler.rightBattery, airpodsHandler.caseBattery) : i18n("Not connected")
+    //uncomment this line to hide the plasmoid when airpods are not connected
+    // Plasmoid.status: airpodsHandler.connected ? PlasmaCore.Types.ActiveStatus : PlasmaCore.Types.HiddenStatus
     AirpodsHandler {
         id: airpodsHandler
     }
+
+    compactRepresentation: MouseArea {
+        Layout.minimumWidth: airpodsHandler.connected ? Kirigami.Units.gridUnit * 4 : Kirigami.Units.gridUnit * 2
+        function getBatteryIconName() {
+            if (airpodsHandler.leftCharging && airpodsHandler.rightCharging) {
+                if (Math.min(airpodsHandler.leftBattery, airpodsHandler.rightBattery) > 80) {
+                    return "battery-100-charging";
+                } else if (Math.min(airpodsHandler.leftBattery, airpodsHandler.rightBattery) > 60) {
+                    return "battery-080-charging";
+                } else if (Math.min(airpodsHandler.leftBattery, airpodsHandler.rightBattery) > 40) {
+                    return "battery-060-charging";
+                } else if (Math.min(airpodsHandler.leftBattery, airpodsHandler.rightBattery) > 20) {
+                    return "battery-040-charging";
+                } else {
+                    return "battery-020-charging";
+                }
+            } else {
+                if (Math.min(airpodsHandler.leftBattery, airpodsHandler.rightBattery) > 80) {
+                    return "battery-100";
+                } else if (Math.min(airpodsHandler.leftBattery, airpodsHandler.rightBattery) > 60) {
+                    return "battery-080";
+                } else if (Math.min(airpodsHandler.leftBattery, airpodsHandler.rightBattery) > 40) {
+                    return "battery-060";
+                } else if (Math.min(airpodsHandler.leftBattery, airpodsHandler.rightBattery) > 20) {
+                    return "battery-040";
+                } else {
+                    return "battery-020";
+                }
+            }
+        }
+        RowLayout{
+            visible: airpodsHandler.connected
+            anchors.fill: parent
+            PlasmaComponents3.Label {
+                id: batteryPercentageLabel
+                text: i18n("%1%", Math.min(airpodsHandler.leftBattery, airpodsHandler.rightBattery))
+                textFormat: Text.PlainText
+            }
+            Kirigami.Icon {
+                source: getBatteryIconName()
+            }
+        }
+
+        Kirigami.Icon {
+            visible: !airpodsHandler.connected
+            source: "audio-headphones"
+        }
+        onClicked: {
+            root.expanded = !root.expanded
+        }
+    }
+
     fullRepresentation: PlasmaExtras.Representation {
         ColumnLayout {
             anchors.top: parent.top
@@ -30,10 +85,18 @@ PlasmoidItem {
                     level: 1
                     Layout.alignment: Qt.AlignLeft
                 }
+                Button{
+                    text: airpodsHandler.connected ? i18n("Disconnect") : i18n("Connect")
+                    onClicked: airpodsHandler.connected ? airpodsHandler.disconnect() : airpodsHandler.connect()
+                    Layout.alignment: Qt.AlignRight
+                    height: Kirigami.Units.gridUnit
+                }
                 Button {
+                    id: refreshButton
                     icon.name: "view-refresh"
                     onClicked: airpodsHandler.updateBatteryStatuses()
                     Layout.alignment: Qt.AlignRight
+                    height: Kirigami.Units.gridUnit
                 }
             }
 
@@ -42,6 +105,7 @@ PlasmoidItem {
             }
             Kirigami.FormLayout {
                 Layout.fillWidth: true
+                visible: airpodsHandler.connected
                 BatteryItem {
                     batteryPercentage: airpodsHandler.caseBattery
                     isCharging: airpodsHandler.caseCharging
@@ -76,13 +140,23 @@ PlasmoidItem {
                     onCurrentIndexChanged: {
                         airpodsHandler.ancStatus = comboBox.currentIndex + 1
                     }
+                    visible: airpodsHandler.connected
+                }
+                Kirigami.Heading {
+                    Layout.fillWidth: true
+                    text: airpodsHandler.deviceAddress
+                    level: 5
+                    Layout.alignment: Qt.AlignLeft
+                    Kirigami.FormData.label: i18n("Device Address:")
+                }
+                Kirigami.Heading {
+                    Layout.fillWidth: true
+                    text: airpodsHandler.connected ? i18n("Connected") : i18n("Not connected")
+                    level: 5
+                    Layout.alignment: Qt.AlignLeft
+                    Kirigami.FormData.label: i18n("Connection Status:")
                 }
             }
         }
     }
-    // compactRepresentation: Item { 
-    //     PlasmaComponents3.Label {
-    //         text: HelloWorld.text
-    //     }
-    // }
 }

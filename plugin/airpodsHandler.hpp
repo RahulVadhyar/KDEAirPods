@@ -54,20 +54,22 @@ Q_SIGNALS:
     void leftChargingChanged();
     void rightChargingChanged();
     void caseChargingChanged();
-
     
 private:
-    QString deviceName;
-    QString deviceAddress;
-    bool connected;
-    int ancStatus;
+    QString deviceName = "Not Connected";
+    QString deviceAddress  = "Not Connected";
+    bool connected = false;
+    int ancStatus = 0;
     std::shared_ptr<DevicesInfoFetcher> devicesInfoFetcher;
-    std::shared_ptr<Device> device;
-    int leftBattery;
-    int rightBattery;
-    int caseBattery;
-    bool leftCharging;
-    bool rightCharging;
-    bool caseCharging; 
+    std::shared_ptr<Device> device = nullptr;
+    int leftBattery = 0;
+    int rightBattery = 0;
+    int caseBattery = 0;
+    bool leftCharging = false;
+    bool rightCharging = false;
+    bool caseCharging = false; 
+
+    void handleBatteryEvent(size_t id, std::map<DeviceBatteryType, DeviceBatteryData> batteryStatus);
+    void handleActiveDeviceEvent(std::shared_ptr<Device> device);
 
 };

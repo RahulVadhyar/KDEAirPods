@@ -6,23 +6,34 @@
 #include "airpodsHandler.hpp"
 #include "DevicesInfoFetcher.h"
 #include <QQmlEngine>
-
+#include <iostream>
+#include <regex>
 AirpodsHandler::AirpodsHandler(QObject *parent)
     : QObject(parent)
 {
     this->devicesInfoFetcher = std::make_shared<DevicesInfoFetcher>();
+    this->devicesInfoFetcher->GetOnActiveDeviceChangedEvent().Subscribe([this](size_t listenerId, const std::shared_ptr<Device>& newDevice) {
+        this->handleActiveDeviceEvent(newDevice);
+    });
     auto devices = this->devicesInfoFetcher->GetDevices();
-    if(devices.size() == 0){
-        this->connected = false;
-    } else {
-        this->connected = true;
+    if (devices.size() == 0){
+        return;
+    }
+    for(auto device : devices){
+        this->deviceName = QString::fromStdString(device->GetName());
+        this->deviceAddress = QString::fromStdString(device->GetAddress());
+        this->device = device;
+        if (device->GetConnected()){
+            this->connected = true;
+            break;
+        }
+    }
+    if (!this->connected){
+        return;
     }
 
     this->device = this->devicesInfoFetcher->GetActiveDevice();
-    this->deviceName = QString::fromStdString(this->device->GetName());
-    this->deviceAddress = QString::fromStdString(this->device->GetAddress());
-    this->ancStatus = (int)this->device->GetAncMode();
-    this->updateBatteryStatuses();
+    this->handleActiveDeviceEvent(this->device);
 }
 
 QString AirpodsHandler::getDeviceName() const { 
@@ -61,25 +72,25 @@ int AirpodsHandler::getAncStatus() const {
     return ancStatus; 
 }
 void AirpodsHandler::setAncStatus(int status) { 
-    if (ancStatus != status) {
-        ancStatus = status; 
-        this->device->SetAnc(DeviceAncMode(status));
-        Q_EMIT ancStatusChanged(); 
-        this->updateBatteryStatuses();
+    if (ancStatus != status && this->connected) {
+            this->device->SetAnc(DeviceAncMode(status));
+            ancStatus = status; 
+            Q_EMIT ancStatusChanged(); 
     }
 }
 
 
 void AirpodsHandler::connectDevice() {
-    // this->device->Connect();
-    // this->connected = true;
-    // Q_EMIT connectedChanged();
+    if(!this->device){
+        return;
+    }
+    this->devicesInfoFetcher->Connect(this->device->GetAddress());
 }
 
 void AirpodsHandler::disconnectDevice() {
-    // this->device->Disconnect();
-    // this->connected = false;
-    // Q_EMIT connectedChanged();
+    if(this->connected){
+        this->device->Disconnect();
+    }
 }
 
 int AirpodsHandler::getLeftBattery() const { 
@@ -107,6 +118,9 @@ bool AirpodsHandler::getCaseCharging() const {
 }
 
 void AirpodsHandler::updateBatteryStatuses() {
+    if(!this->connected){
+        return;
+    }
     auto batteryStatus = this->device->GetBatteryStatus();
     this->leftBattery = batteryStatus[DeviceBatteryType::Left].Battery;
     this->rightBattery = batteryStatus[DeviceBatteryType::Right].Battery;
@@ -120,4 +134,45 @@ void AirpodsHandler::updateBatteryStatuses() {
     Q_EMIT leftChargingChanged();
     Q_EMIT rightChargingChanged();
     Q_EMIT caseChargingChanged();
+}
+
+void AirpodsHandler::handleBatteryEvent(size_t id, std::map<DeviceBatteryType, DeviceBatteryData> batteryStatus){
+    this->leftBattery = batteryStatus[DeviceBatteryType::Left].Battery;
+    this->rightBattery = batteryStatus[DeviceBatteryType::Right].Battery;
+    this->caseBattery = batteryStatus[DeviceBatteryType::Case].Battery;
+    this->leftCharging = batteryStatus[DeviceBatteryType::Left].isCharging;
+    this->rightCharging = batteryStatus[DeviceBatteryType::Right].isCharging;
+    this->caseCharging = batteryStatus[DeviceBatteryType::Case].isCharging;
+    Q_EMIT leftBatteryChanged();
+    Q_EMIT rightBatteryChanged();
+    Q_EMIT caseBatteryChanged();
+    Q_EMIT leftChargingChanged();
+    Q_EMIT rightChargingChanged();
+    Q_EMIT caseChargingChanged();
+}
+
+void AirpodsHandler::handleActiveDeviceEvent(std::shared_ptr<Device> newDevice){
+    if(this->connected){
+        this->setConnected(false);
+        return;
+    }
+    this->device = newDevice;
+    this->setConnected(newDevice->GetConnected());
+    this->setDeviceAddress(QString::fromStdString(this->device->GetAddress()));
+    this->setDeviceName(QString::fromStdString(this->device->GetName()));
+    this->setAncStatus((int)this->device->GetAncMode());
+    this->device->GetBattery().GetBatteryChangedEvent().Subscribe([this](size_t listenerId, const std::map<DeviceBatteryType, DeviceBatteryData>& data) {
+        this->handleBatteryEvent(listenerId, data);
+    });
+    this->device->GetAnc().GetAncChangedEvent().Subscribe([this](size_t listenerId, const DeviceAncMode& data) {
+        this->ancStatus = (int)data;
+        Q_EMIT ancStatusChanged();
+    });
+
+    this->device->GetConnectedPropertyChangedEvent().Subscribe([this](size_t listenerId, const bool& data) {
+        if(!data){
+            std::cout << "Device Disconnected" << std::endl;
+            this->setConnected(false);
+        }
+    });
 }
