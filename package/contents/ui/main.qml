@@ -11,7 +11,7 @@ import com.github.rahulvadhyar.private.KDEAirPods
 PlasmoidItem {
     id: root
     Plasmoid.title: airpodsHandler.deviceName
-    Plasmoid.icon: "audio-headphones" //TODO: Change this to airpods icon
+    Plasmoid.icon: airpodsHandler.connected ? (isAirpodsCharging() ? Qt.resolvedUrl("../icons/airpods-with-case.svg") : Qt.resolvedUrl("../icons/airpods-only.svg")) : Qt.resolvedUrl("../icons/airpods-case-only.svg") 
     toolTipMainText: i18n(Plasmoid.title)
     toolTipSubText: airpodsHandler.connected ? i18n("Connected"  + "\n" + "Left: %1%\nRight: %2%\nCase: %3%", airpodsHandler.leftBattery, airpodsHandler.rightBattery, airpodsHandler.caseBattery) : i18n("Not connected")
     //uncomment this line to hide the plasmoid when airpods are not connected
@@ -20,8 +20,12 @@ PlasmoidItem {
         id: airpodsHandler
     }
 
+    function isAirpodsCharging() {
+        return airpodsHandler.leftCharging || airpodsHandler.rightCharging
+    }
+
     compactRepresentation: MouseArea {
-        Layout.minimumWidth: airpodsHandler.connected ? Kirigami.Units.gridUnit * 4 : Kirigami.Units.gridUnit * 2
+        Layout.minimumWidth: airpodsHandler.connected && !isAirpodsCharging ? Kirigami.Units.gridUnit * 4 : Kirigami.Units.gridUnit * 2
         function getBatteryIconName() {
             if (airpodsHandler.leftCharging && airpodsHandler.rightCharging) {
                 if (Math.min(airpodsHandler.leftBattery, airpodsHandler.rightBattery) > 80) {
@@ -50,7 +54,7 @@ PlasmoidItem {
             }
         }
         RowLayout{
-            visible: airpodsHandler.connected
+            visible: airpodsHandler.connected && !isAirpodsCharging()
             anchors.fill: parent
             PlasmaComponents3.Label {
                 id: batteryPercentageLabel
@@ -63,8 +67,8 @@ PlasmoidItem {
         }
 
         Kirigami.Icon {
-            visible: !airpodsHandler.connected
-            source: "audio-headphones"
+            visible: !airpodsHandler.connected || isAirpodsCharging()
+            source: Plasmoid.icon
         }
         onClicked: {
             root.expanded = !root.expanded
@@ -127,7 +131,7 @@ PlasmoidItem {
             }
             Kirigami.Separator {
                 Layout.fillWidth: true
-                visible: airpodsHandler.leftBattery > 0 || airpodsHandler.rightBattery > 0 || airpodsHandler.caseBattery > 0
+                visible: airpodsHandler.connected
             }
             Kirigami.FormLayout {
                 Layout.fillWidth: true
