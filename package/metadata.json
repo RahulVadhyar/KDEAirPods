@@ -1,4 +1,5 @@
 {
+    "KPackageStructure": "Plasma/Applet",
     "KPlugin": {
         "Authors": [
             {
@@ -9,13 +10,12 @@
         "Category": "System Information",
         "Description": "Airpods status widget",
         "Icon": "battery",
-        "Id": "com.github.rahulvadhyar.KDEAirPods",
         "Name": "Airpods",
-        "Version": "1",
+        "Version": "1.0",
         "Website": "https://github.com/RahulVadhyar/KDEAirPods",
-        "License": "AGPL-3+"
+        "License": "AGPL-3+",
+        "Id": "com.github.rahulvadhyar.KDEAirPods"
     },
     "X-Plasma-API": "declarativeappletscript",
-    "KPackageStructure": "Plasma/Applet",
     "X-Plasma-API-Minimum-Version": "6.0"
 }

@@ -2,30 +2,20 @@
     SPDX-FileCopyrightText: 2024 Rahul Vadhyar vadhyarrahul@gmail.com>
     SPDX-License-Identifier: AGPL-3.0-or-later
 */
-
-#include "KDEAirPods.hpp"
-
-// KF
-#include <KLocalizedString>
 // Qt
-#include <QJSEngine>
 #include <QQmlEngine>
-#include <QQmlContext>
+#include <QQmlExtensionPlugin>
+#include "airpodsHandler.hpp"
 
-static QJSValue singletonTypeExampleProvider(QQmlEngine* engine, QJSEngine* scriptEngine)
+class KDEAirpodsPlugin : public QQmlExtensionPlugin
 {
-    Q_UNUSED(engine)
+    Q_OBJECT
+    Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QQmlExtensionInterface")
 
-    QJSValue helloWorld = scriptEngine->newObject();
-    helloWorld.setProperty("text", i18n("Hello world!"));
-    return helloWorld;
-}
+public:
+    void registerTypes(const char *uri) override {
+        qmlRegisterType<AirpodsHandler>(uri, 1, 0, "AirpodsHandler");
+    }
+};
 
-
-void KDEAirpodsPlugin::registerTypes(const char* uri)
-{
-    Q_ASSERT(uri == QLatin1String("com.github.rahulvadhyar.private.KDEAirPods"));
-
-    qmlRegisterSingletonType(uri, 1, 0, "HelloWorld", singletonTypeExampleProvider);
-}
-
+#include "KDEAirPods.moc"
