@@ -18,6 +18,7 @@ private:
     std::string _modalias{};
     DeviceBattery _battery;
     DeviceAnc _anc{};
+    bool isInEar = false;
 
     Event<bool> _onConnectedPropertyChangedEvent{};
 
@@ -49,6 +50,11 @@ public:
         return _modalias;
     }
 
+    bool GetIsInEar() const {
+        std::lock_guard lock{_propertyMutex};
+        return isInEar;
+    }
+
     std::map<DeviceBatteryType, DeviceBatteryData> GetBatteryStatus() const { // лучше сразу прокидывать Battery
         std::lock_guard lock{_propertyMutex};
         return _battery.GetBatteryStatus();
@@ -71,6 +77,10 @@ public:
 
     Event<bool>& GetConnectedPropertyChangedEvent() {
         return _onConnectedPropertyChangedEvent;
+    }
+
+    Event<bool>& GetIsInEarChangedEvent() {
+        return _aapClient->GetInEarEvent();
     }
 
     void Connect(); // TODO: может полностью перейти на Async?

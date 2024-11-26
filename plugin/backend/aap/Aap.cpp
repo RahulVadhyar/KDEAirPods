@@ -9,6 +9,7 @@
 #include "Aap.h"
 
 #include "Logger.h"
+#include <iostream>
 
 
 AapRequest::AapRequest(std::string tag) : _tag{tag} {
@@ -54,7 +55,6 @@ AapBatteryWatcher::AapBatteryWatcher() : AapWatcher{"AapBatteryWatcher"} {
 void AapBatteryWatcher::ProcessBytes(const std::vector<unsigned char>& bytes) {
     // min length of the battery packet
     if (bytes.size() < 11) return;
-
     // packet type must be battery
     if (bytes[4] != static_cast<unsigned char>(Cmd::Battery)) return;
     
@@ -152,3 +152,13 @@ std::string AapAncWatcher::DummyConvertAncMode(AncMode mode) {
             return "Unknown";
     }
 }   
+
+AapInEarWatcher::AapInEarWatcher() : AapWatcher{"AapInEarWatcher"} {
+}
+
+void AapInEarWatcher::ProcessBytes(const std::vector<unsigned char>& bytes) {
+    if (bytes.size() != 8) return;
+    // std::cout << "In ear: " << (int)bytes[7] << std::endl;
+    bool isInEar = !bytes[7];
+    _event.FireEvent(isInEar);
+}

@@ -50,9 +50,21 @@ void AapClient::Start() {
             memset(buffer, 0, sizeof(buffer));
             ssize_t receivedBytesLength = recv(_socket, buffer, sizeof(buffer), 0);
             if (receivedBytesLength >= 0) {
+                // std::cout << "Packet: " << bytesToHexString(buffer, receivedBytesLength) << std::endl;
+                // std::cout << "Length: " << receivedBytesLength << std::endl;
+                /*
+                In ear detection:
+                for airpods pro 2 only:
+                get 2 packets, one is:
+                040004000600000{0 or 1} -> 0 is in ear, 1 is out ear, len 8
+                the next packet is for ANC
+                or this one(means that the airpods switch sides or smthg)
+                0400040006000100
+                */
+
                 LOG_DEBUG("o(%zu):%s", receivedBytesLength, bytesToHexString(buffer, receivedBytesLength).c_str());
                 vectorBuffer.assign(buffer, buffer + receivedBytesLength);
-                
+                InEarWatcher->ProcessBytes(vectorBuffer);
                 BatteryWatcher->ProcessBytes(vectorBuffer);
                 AncWatcher->ProcessBytes(vectorBuffer);
             }

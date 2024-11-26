@@ -242,3 +242,16 @@ public:
 private:
     std::string DummyConvertAncMode(AncMode mode);
 };
+
+class AapInEarWatcher : public AapWatcher {
+private:
+    Event<bool> _event{};
+
+public:
+    AapInEarWatcher();
+    void ProcessBytes(const std::vector<unsigned char>& bytes) override;
+
+    Event<bool>& GetEvent() {
+        return _event;
+    }
+};

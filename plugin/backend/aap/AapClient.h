@@ -28,6 +28,7 @@ class AapClient {
 private:
     std::unique_ptr<AapBatteryWatcher> BatteryWatcher {std::make_unique<AapBatteryWatcher>()};
     std::unique_ptr<AapAncWatcher> AncWatcher {std::make_unique<AapAncWatcher>()};
+    std::unique_ptr<AapInEarWatcher> InEarWatcher {std::make_unique<AapInEarWatcher>()};
 
     std::string _address{};
     int _socket{};
@@ -51,6 +52,10 @@ public:
 
     Event<AncWatcherData>& GetAncEvent() {
         return AncWatcher->GetEvent();
+    }
+
+    Event<bool>& GetInEarEvent() {
+        return InEarWatcher->GetEvent();
     }
 
     void SendRequest(const AapRequest& aapRequest);

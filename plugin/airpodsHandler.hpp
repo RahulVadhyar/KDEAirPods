@@ -20,6 +20,7 @@ class AirpodsHandler : public QObject
     Q_PROPERTY(bool leftCharging READ getLeftCharging NOTIFY leftChargingChanged)
     Q_PROPERTY(bool rightCharging READ getRightCharging NOTIFY rightChargingChanged)
     Q_PROPERTY(bool caseCharging READ getCaseCharging NOTIFY caseChargingChanged)
+    Q_PROPERTY(bool isInEar READ getIsInEar NOTIFY isInEarChanged)
 
 public:
     explicit AirpodsHandler(QObject *parent = nullptr);
@@ -33,6 +34,7 @@ public:
     bool getLeftCharging() const;
     bool getRightCharging() const;
     bool getCaseCharging() const;
+    bool getIsInEar() const;
 
 public Q_SLOTS:
     void setDeviceName(const QString &name);
@@ -54,6 +56,7 @@ Q_SIGNALS:
     void leftChargingChanged();
     void rightChargingChanged();
     void caseChargingChanged();
+    void isInEarChanged();
     
 private:
     QString deviceName = "Not Connected";
@@ -68,6 +71,7 @@ private:
     bool leftCharging = false;
     bool rightCharging = false;
     bool caseCharging = false; 
+    bool isInEar = false;
 
     void handleBatteryEvent(size_t id, std::map<DeviceBatteryType, DeviceBatteryData> batteryStatus);
     void handleActiveDeviceEvent(std::shared_ptr<Device> device);

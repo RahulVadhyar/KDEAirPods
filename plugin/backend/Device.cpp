@@ -16,6 +16,9 @@ Device::Device(const sdbus::ObjectPath& objectPath, const std::map<std::string, 
         _aapClient->GetAncEvent().Subscribe([this](size_t listenerId, const AncWatcherData& data) {
             OnAncEvent(data);
         });
+        _aapClient->GetInEarEvent().Subscribe([this](size_t listenerId, bool data) {
+            isInEar = data;
+        });
     }
 
     if (deviceInterface.contains("Connected")) {

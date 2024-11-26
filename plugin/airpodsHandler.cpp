@@ -88,7 +88,7 @@ void AirpodsHandler::connectDevice() {
 }
 
 void AirpodsHandler::disconnectDevice() {
-    if(this->connected){
+    if(this->connected && this->device){
         this->device->Disconnect();
     }
 }
@@ -117,8 +117,12 @@ bool AirpodsHandler::getCaseCharging() const {
     return caseCharging; 
 }
 
+bool AirpodsHandler::getIsInEar() const { 
+    return isInEar; 
+}
+
 void AirpodsHandler::updateBatteryStatuses() {
-    if(!this->connected){
+    if(!this->connected && this->device){
         return;
     }
     auto batteryStatus = this->device->GetBatteryStatus();
@@ -175,4 +179,9 @@ void AirpodsHandler::handleActiveDeviceEvent(std::shared_ptr<Device> newDevice){
             this->setConnected(false);
         }
     });
+    this->device->GetIsInEarChangedEvent().Subscribe([this](size_t listenerId, const bool& data) {
+        this->isInEar = data;
+        Q_EMIT isInEarChanged();
+    });
+
 }
