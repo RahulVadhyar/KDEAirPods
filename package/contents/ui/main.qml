@@ -47,7 +47,7 @@ PlasmoidItem {
         }
     }
     compactRepresentation: MouseArea {
-        Layout.minimumWidth: airpodsHandler.connected && !isAirpodsCharging ? Kirigami.Units.gridUnit * 4 : Kirigami.Units.gridUnit * 2
+        Layout.minimumWidth: Kirigami.Units.gridUnit * 4
         function getBatteryIconName() {
             if (airpodsHandler.leftCharging && airpodsHandler.rightCharging) {
                 if (Math.min(airpodsHandler.leftBattery, airpodsHandler.rightBattery) > 80) {
@@ -91,6 +91,7 @@ PlasmoidItem {
         Kirigami.Icon {
             visible: !airpodsHandler.connected || isAirpodsCharging()
             source: Plasmoid.icon
+            anchors.fill: parent
         }
         onClicked: {
             root.expanded = !root.expanded
