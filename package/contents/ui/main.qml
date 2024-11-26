@@ -17,7 +17,8 @@ PlasmoidItem {
     toolTipSubText: airpodsHandler.connected ? i18n("Connected"  + "\n" + "Left: %1%\nRight: %2%\nCase: %3%", airpodsHandler.leftBattery, airpodsHandler.rightBattery, airpodsHandler.caseBattery) : i18n("Not connected")
     property int playbackStatus: mpris2Model.currentPlayer?.playbackStatus ?? 0
     property bool isPlaying: root.playbackStatus === Mpris.PlaybackStatus.Playing
-    
+    property bool didWeStopPlayback: false
+
     //uncomment this line to hide the plasmoid when airpods are not connected
     // Plasmoid.status: airpodsHandler.connected ? PlasmaCore.Types.ActiveStatus : PlasmaCore.Types.HiddenStatus
     AirpodsHandler {
@@ -36,12 +37,14 @@ PlasmoidItem {
         target: airpodsHandler
         onIsInEarChanged: {
             if (airpodsHandler.isInEar) {
-                if (!root.isPlaying) {
+                if (!root.isPlaying && didWeStopPlayback) {
                     mpris2Model.currentPlayer.Play()
+                    didWeStopPlayback = false
                 } 
             } else {
                 if (root.isPlaying) {
                     mpris2Model.currentPlayer.Pause()
+                    didWeStopPlayback = true
                 }
             }
         }
@@ -156,45 +159,6 @@ PlasmoidItem {
                 Layout.fillWidth: true
                 visible: airpodsHandler.connected
             }
-            RowLayout {
-                Layout.fillWidth: true
-                Layout.alignment: Qt.AlignHCenter
-                PlasmaComponents3.ToolButton { 
-                    icon.name: "media-skip-backward"
-                    icon.width: Kirigami.Units.iconSizes.medium
-                    icon.height: Kirigami.Units.iconSizes.medium
-                    onClicked: mpris2Model.currentPlayer.Previous()
-                    text: i18n("Previous")
-                    display: PlasmaComponents3.ToolButton.IconOnly
-                }
-
-                PlasmaComponents3.ToolButton {
-                    icon.name: root.isPlaying ? "media-playback-pause" : "media-playback-start"
-                    icon.width: Kirigami.Units.iconSizes.medium
-                    icon.height: Kirigami.Units.iconSizes.medium
-                    onClicked: {
-                        if (root.isPlaying) {
-                            mpris2Model.currentPlayer.Pause()
-                        } else {
-                            mpris2Model.currentPlayer.Play()
-                        }
-                    }
-                    text: root.isPlaying ? i18n("Pause") : i18n("Play")
-                    display: PlasmaComponents3.ToolButton.IconOnly
-                }
-
-                PlasmaComponents3.ToolButton {
-                    icon.name: "media-skip-forward"
-                    icon.width: Kirigami.Units.iconSizes.medium
-                    icon.height: Kirigami.Units.iconSizes.medium
-                    onClicked: mpris2Model.currentPlayer.Next()
-                    text: i18n("Next")
-                    display: PlasmaComponents3.ToolButton.IconOnly
-                }
-            }
-            Kirigami.Separator {
-                Layout.fillWidth: true
-            }
 
             Kirigami.FormLayout {
                 Layout.fillWidth: true
@@ -215,6 +179,7 @@ PlasmoidItem {
                     level: 5
                     Layout.alignment: Qt.AlignLeft
                     Kirigami.FormData.label: i18n("Is in ear?: ")
+                    visible: airpodsHandler.connected
                 }
                 Kirigami.Heading {
                     Layout.fillWidth: true

@@ -20,20 +20,11 @@ AirpodsHandler::AirpodsHandler(QObject *parent)
         return;
     }
     for(auto device : devices){
-        this->deviceName = QString::fromStdString(device->GetName());
-        this->deviceAddress = QString::fromStdString(device->GetAddress());
-        this->device = device;
         if (device->GetConnected()){
-            this->connected = true;
+            this->handleActiveDeviceEvent(device);
             break;
         }
     }
-    if (!this->connected){
-        return;
-    }
-
-    this->device = this->devicesInfoFetcher->GetActiveDevice();
-    this->handleActiveDeviceEvent(this->device);
 }
 
 QString AirpodsHandler::getDeviceName() const { 
@@ -158,6 +149,8 @@ void AirpodsHandler::handleBatteryEvent(size_t id, std::map<DeviceBatteryType, D
 void AirpodsHandler::handleActiveDeviceEvent(std::shared_ptr<Device> newDevice){
     if(this->connected){
         this->setConnected(false);
+        this->isInEar = false;
+        Q_EMIT isInEarChanged();
         return;
     }
     this->device = newDevice;
@@ -177,11 +170,13 @@ void AirpodsHandler::handleActiveDeviceEvent(std::shared_ptr<Device> newDevice){
         if(!data){
             std::cout << "Device Disconnected" << std::endl;
             this->setConnected(false);
+            this->isInEar = false;
+            Q_EMIT isInEarChanged();
         }
     });
     this->device->GetIsInEarChangedEvent().Subscribe([this](size_t listenerId, const bool& data) {
         this->isInEar = data;
         Q_EMIT isInEarChanged();
     });
-
+    this->updateBatteryStatuses();
 }
